@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity, ArrowDownRight, ArrowUpRight, BatteryCharging, BookOpen, Check,
   ChevronDown, ChevronRight, CircleHelp, Cloud, Download, ExternalLink, Eye,
@@ -52,7 +52,7 @@ function Metric({ label, value, detail, icon: Icon, tone = 'mint' }) {
 }
 
 function Toggle({ checked, onChange, label }) {
-  return <button className={`toggle ${checked ? 'is-on' : ''}`} role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)}>
+  return <button type="button" className={`toggle ${checked ? 'is-on' : ''}`} role="switch" aria-checked={checked} aria-label={label} onClick={() => onChange(!checked)}>
     <span />
   </button>;
 }
@@ -85,8 +85,35 @@ function ScenarioCard({ id, active, title, description, number: num, onClick }) 
 }
 
 function Modal({ title, children, onClose, wide = false }) {
+  const modalRef = useRef(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+
+  useEffect(() => {
+    const previousFocus = document.activeElement;
+    modalRef.current?.querySelector('button')?.focus();
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') closeRef.current();
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      window.removeEventListener('keydown', handleEscape);
+      previousFocus?.focus?.();
+    };
+  }, []);
+
+  function keepFocusInside(event) {
+    if (event.key !== 'Tab') return;
+    const items = [...(modalRef.current?.querySelectorAll('a[href], button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])') || [])];
+    if (!items.length) { event.preventDefault(); return; }
+    const first = items[0];
+    const last = items[items.length - 1];
+    if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+    else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+  }
+
   return <div className="modal-backdrop" role="presentation" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
-    <section className={`modal ${wide ? 'modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title}>
+    <section ref={modalRef} className={`modal ${wide ? 'modal-wide' : ''}`} role="dialog" aria-modal="true" aria-label={title} onKeyDown={keepFocusInside}>
       <div className="modal-head"><h2>{title}</h2><button className="icon-button" onClick={onClose} aria-label="Fechar"><X size={19} /></button></div>
       {children}
     </section>
@@ -220,7 +247,7 @@ export default function App() {
         <div><strong>ENERGIA<span>VIVA</span></strong><small>COMUNIDADE · ODS 7</small></div>
       </div>
       <nav className="main-nav" aria-label="Navegação principal">
-        {NAV_ITEMS.map(item => <button key={item.id} className={activeView === item.id ? 'nav-active' : ''} onClick={() => setActiveView(item.id)}>
+        {NAV_ITEMS.map(item => <button type="button" key={item.id} className={activeView === item.id ? 'nav-active' : ''} aria-current={activeView === item.id ? 'page' : undefined} onClick={() => setActiveView(item.id)}>
           <item.icon size={16} /><span>{item.label}</span>
         </button>)}
       </nav>
@@ -236,7 +263,7 @@ export default function App() {
         <div>
           <div className="eyebrow"><span>OBJETIVO DE DESENVOLVIMENTO SUSTENTÁVEL 07</span><span className="eyebrow-line" /></div>
           <h1>Energia acessível. <em>Futuro compartilhado.</em></h1>
-          <p>{activeView === 'marketplace' ? 'Gestão demonstrativa de famílias, usinas, patrocinadores e propostas de geração compartilhada.' : 'Explore uma comunidade brasileira e simule caminhos para uma transição energética mais justa.'}</p>
+          <p>{activeView === 'marketplace' ? 'Gestão demonstrativa de famílias, usinas, patrocinadores e propostas de geração compartilhada.' : 'Explore uma comunidade brasileira e simule caminhos para uma transição energética mais justa. Os resultados são estimativas didáticas baseadas nas premissas editáveis.'}</p>
         </div>
         {activeView !== 'marketplace' && <div className="heading-actions">
           <button className="button button-quiet" onClick={exportReport}><Download size={16} /> Exportar cenário</button>
@@ -275,10 +302,11 @@ export default function App() {
             <div className="home-picker" aria-label="Selecionar residência">
               <div className="picker-label"><span>RESIDÊNCIAS</span><small>Selecione também por teclado</small></div>
               <div className="home-pills">
-                {homes.map((home, index) => <button key={home.id} className={`home-pill ${selectedId === home.id ? 'selected' : ''}`} onClick={() => setSelectedId(home.id)} aria-pressed={selectedId === home.id}>
-                  <span className="home-pill-number">0{index + 1}</span><span>{home.name}</span>{home.installations.length > 0 && <i />}
+                {homes.map((home, index) => <button type="button" key={home.id} className={`home-pill ${selectedId === home.id ? 'selected' : ''}`} onClick={() => setSelectedId(home.id)} aria-label={`Selecionar ${home.name}, ${home.family}, ${home.installations.length} tecnologias ativas`} aria-pressed={selectedId === home.id}>
+                  <span className="home-pill-number">0{index + 1}</span><span className="home-pill-main"><b>{home.name}</b><small>{home.family} · {home.installations.length} tecnologia{home.installations.length === 1 ? '' : 's'}</small></span>{home.installations.length > 0 && <i aria-hidden="true" />}
                 </button>)}
               </div>
+              <span className="sr-only" role="status" aria-live="polite">{selectedHome.name} selecionada. {selectedHome.installations.length} tecnologias ativas.</span>
             </div>
           </div>
 
@@ -350,10 +378,10 @@ export default function App() {
         </div>
         <div className="analytics-grid">
           <div className="chart-panel"><div className="section-headline"><div><span className="micro-label">ENERGIA POR RESIDÊNCIA</span><h3>Consumo e energia renovável</h3></div><span className="chart-unit">kWh/mês</span></div>
-            <div className="chart-area"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData} margin={{ top: 10, right: 12, left: -16, bottom: 0 }} barGap={4}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" /><XAxis dataKey="casa" tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><YAxis tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 9, color: 'var(--text)' }} /><Legend /><Bar dataKey="consumo" name="Consumo" fill="#247a45" radius={[4, 4, 0, 0]} /><Bar dataKey="renovavel" name="Renovável utilizada" fill="#00a859" radius={[4, 4, 0, 0]} /><Bar dataKey="rede" name="Energia da rede" fill="#8abf55" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>
+          <div className="chart-area"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData} margin={{ top: 10, right: 12, left: -16, bottom: 0 }} barGap={4}><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" /><XAxis dataKey="casa" tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><YAxis tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><Tooltip contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 9, color: 'var(--text)' }} /><Legend /><Bar dataKey="consumo" name="Consumo" fill="var(--chart-primary)" radius={[4, 4, 0, 0]} /><Bar dataKey="renovavel" name="Renovável utilizada" fill="var(--chart-secondary)" radius={[4, 4, 0, 0]} /><Bar dataKey="rede" name="Energia da rede" fill="var(--chart-tertiary)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer></div>
           </div>
           <div className="chart-panel"><div className="section-headline"><div><span className="micro-label">ECONOMIA PROJETADA</span><h3>Conta estimada da comunidade</h3></div><span className="chart-unit">R$</span></div>
-            <div className="chart-area"><ResponsiveContainer width="100%" height="100%"><AreaChart data={impactData} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}><defs><linearGradient id="billAfter" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#00a859" stopOpacity={0.24} /><stop offset="100%" stopColor="#00a859" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" /><XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><YAxis tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><Tooltip formatter={(v) => money2(v)} contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 9, color: 'var(--text)' }} /><Legend /><Area type="monotone" dataKey="antes" name="Antes" stroke="#247a45" fill="#247a45" fillOpacity={0.1} strokeWidth={2} /><Area type="monotone" dataKey="depois" name="Depois" stroke="#00a859" fill="url(#billAfter)" strokeWidth={2.4} /></AreaChart></ResponsiveContainer></div>
+          <div className="chart-area"><ResponsiveContainer width="100%" height="100%"><AreaChart data={impactData} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}><defs><linearGradient id="billAfter" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="var(--chart-secondary)" stopOpacity={0.2} /><stop offset="100%" stopColor="var(--chart-secondary)" stopOpacity={0.01} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--chart-grid)" /><XAxis dataKey="month" tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><YAxis tickLine={false} axisLine={false} tick={{ fill: 'var(--muted)', fontSize: 11 }} /><Tooltip formatter={(v) => money2(v)} contentStyle={{ background: 'var(--panel)', border: '1px solid var(--border)', borderRadius: 9, color: 'var(--text)' }} /><Legend /><Area type="monotone" dataKey="antes" name="Antes" stroke="var(--chart-primary)" fill="var(--chart-primary)" fillOpacity={0.08} strokeWidth={2} /><Area type="monotone" dataKey="depois" name="Depois" stroke="var(--chart-secondary)" fill="url(#billAfter)" strokeWidth={2.4} /></AreaChart></ResponsiveContainer></div>
           </div>
         </div>
         <div className="indicator-lower-grid">
@@ -405,7 +433,7 @@ export default function App() {
     {showSettings && <Modal title="Preferências e comunidade" onClose={() => setShowSettings(false)}>
       <div className="settings-content"><label className="field"><span>Nome do território</span><input className="text-input" value={communityTitle} onChange={e => setCommunityTitle(e.target.value)} /></label>
         <div className="setting-row"><div><b>Reduzir animações</b><small>Desativa movimentos não essenciais e reduz transições visuais.</small></div><Toggle checked={lowMotion} onChange={setLowMotion} label="Reduzir animações" /></div>
-        <div className="setting-row"><div><b>Modo de alto contraste</b><small>Use também o modo claro para ampliar a legibilidade.</small></div><Toggle checked={theme === 'light'} onChange={v => setTheme(v ? 'light' : 'dark')} label="Ativar modo claro" /></div>
+        <div className="setting-row"><div><b>Tema claro</b><small>Use superfícies claras e texto escuro para ampliar o contraste.</small></div><Toggle checked={theme === 'light'} onChange={v => setTheme(v ? 'light' : 'dark')} label="Ativar tema claro" /></div>
         <div className="setting-row"><div><b>Persistência local</b><small>Alterações são salvas automaticamente neste navegador.</small></div><span className="local-state"><Check size={14} /> Ativa</span></div>
         <button className="button button-primary full-width" onClick={persistRemote} disabled={saveBusy}><Save size={16} /> {saveBusy ? 'Salvando...' : 'Sincronizar com Supabase'}</button>
         {saveMessage && <div className="save-message"><Info size={15} /> {saveMessage}</div>}
