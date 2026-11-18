@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import CommunityScene from './components/CommunityScene.jsx';
 import Marketplace from './components/Marketplace.jsx';
+import EnergiaVivaLogo from './components/EnergiaVivaLogo.jsx';
 import {
   applyScenario, calculateCommunity, calculateHome, DEMO_CO2_FACTOR,
   INITIAL_HOMES, MINIMUM_WAGE_2026, SOLUTIONS, SOCIAL_TARIFF_LIMIT
@@ -241,11 +242,8 @@ export default function App() {
   const installedCount = selectedHome.installations.length;
 
   return <div className={`app-shell theme-${theme} ${lowMotion ? 'reduced-motion' : ''}`}><a className="skip-link" href="#main-content">Pular para o conteúdo principal</a>
-    <header className="topbar">
-      <div className="brand-lockup">
-        <div className="brand-mark"><Zap size={20} fill="currentColor" /></div>
-        <div><strong>ENERGIA<span>VIVA</span></strong><small>COMUNIDADE · ODS 7</small></div>
-      </div>
+    <header className="topbar liquid-nav sticky z-50 bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl transition-all duration-500">
+      <EnergiaVivaLogo theme={theme} />
       <nav className="main-nav" aria-label="Navegação principal">
         {NAV_ITEMS.map(item => <button type="button" key={item.id} className={activeView === item.id ? 'nav-active' : ''} aria-current={activeView === item.id ? 'page' : undefined} onClick={() => setActiveView(item.id)}>
           <item.icon size={16} /><span>{item.label}</span>
@@ -259,7 +257,7 @@ export default function App() {
     </header>
 
     <main className="main-content" id="main-content">
-      <div className="page-heading">
+      <div className="page-heading liquid-glass-card relative isolate overflow-hidden rounded-3xl border border-white/20 bg-white/10 backdrop-blur-xl shadow-2xl transition-all duration-500 hover:-translate-y-0.5">
         <div>
           <div className="eyebrow"><span>OBJETIVO DE DESENVOLVIMENTO SUSTENTÁVEL 07</span><span className="eyebrow-line" /></div>
           <h1>Energia acessível. <em>Futuro compartilhado.</em></h1>
@@ -411,7 +409,7 @@ export default function App() {
         <div className="sources-panel"><div className="section-headline"><div><span className="micro-label">BASE DOCUMENTAL</span><h2>Fontes e referências</h2></div><span className="source-updated">Links consultados em nov. 2026</span></div><div className="source-list">{SOURCE_ITEMS.map((source, i) => <a className="source-item" href={source.url} target="_blank" rel="noreferrer" key={source.name}><span className="source-number">0{i + 1}</span><span><b>{source.name}</b><small>{source.description}</small></span><span className="source-type">{source.type}</span><ExternalLink size={15} /></a>)}</div></div>
       </section>}
 
-      <footer className="site-footer"><div><strong>ENERGIA<span>VIVA</span></strong><small>Simulador comunitário · ODS 7</small></div><p>Ferramenta educacional de simulação. Não substitui avaliação técnica, análise da distribuidora, orientação jurídica ou cálculo oficial de fatura.</p><span>VERSÃO 1.0 · 2026</span></footer>
+    <footer className="site-footer"><EnergiaVivaLogo subtitle="Simulador comunitário · ODS 7" compact theme={theme} /><p>Ferramenta educacional de simulação. Não substitui avaliação técnica, análise da distribuidora, orientação jurídica ou cálculo oficial de fatura.</p><span>VERSÃO 1.0 · 2026</span></footer>
     </main>
 
     {showCalculator && <Modal title="Premissas da residência" onClose={() => setShowCalculator(false)} wide>
@@ -441,7 +439,7 @@ export default function App() {
       </div>
     </Modal>}
 
-    {presentation && <div className="presentation-overlay"><div className="presentation-top"><div className="brand-lockup"><div className="brand-mark"><Zap size={20} fill="currentColor" /></div><div><strong>ENERGIA<span>VIVA</span></strong><small>MODO APRESENTAÇÃO</small></div></div><button className="icon-button" onClick={() => setPresentation(false)} aria-label="Sair da apresentação"><X size={21} /></button></div><div className="presentation-content"><span className="micro-label">ETAPA {presentationStep + 1} DE 4</span><h2>{['O território e o desafio', '01 · Infraestrutura precária', '02 · Transição energética', '03 · Soluções integradas'][presentationStep]}</h2><p>{[
+    {presentation && <div className="presentation-overlay"><div className="presentation-top"><EnergiaVivaLogo subtitle="MODO APRESENTAÇÃO" theme={theme} /><button className="icon-button" onClick={() => setPresentation(false)} aria-label="Sair da apresentação"><X size={21} /></button></div><div className="presentation-content"><span className="micro-label">ETAPA {presentationStep + 1} DE 4</span><h2>{['O território e o desafio', '01 · Infraestrutura precária', '02 · Transição energética', '03 · Soluções integradas'][presentationStep]}</h2><p>{[
       'Uma comunidade fictícia, com seis residências e equipamentos coletivos, serve como laboratório para visualizar desafios de acesso, custo e qualidade da energia.',
       'No cenário inicial, as casas não contam com intervenções sustentáveis. Observe o consumo-base, a estimativa da conta e a parcela da renda comprometida.',
       'A eficiência, os primeiros sistemas solares e o aquecimento de água mostram como intervenções graduais podem reduzir a dependência da rede.',

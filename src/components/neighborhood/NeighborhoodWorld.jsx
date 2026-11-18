@@ -5,7 +5,7 @@ import { ODS_POINTS } from '../../data/odsData.js';
 import { groundHeight, ROAD_GRID, createDistrictLayout } from './terrain.js';
 import {
   BusStop, CableSegment, CommunitySquare, EnergyHub, HouseBlock, LocalBusiness,
-  ParkedCar, PublicBuilding, SolarLamp, SportsCourt, Tree, UtilityPole, WalkingPerson
+  ParkedBicycle, ParkedCar, ParkedMotorcycle, PublicBuilding, SalvadorBus, SolarLamp, SportsCourt, Tree, UtilityPole, WalkingPerson
 } from './BuildingBlocks.jsx';
 import { OdsOverlay } from './OdsOverlay.jsx';
 
@@ -101,8 +101,8 @@ function RoadNetwork() {
     <mesh geometry={secondaryGeometry} receiveShadow><meshStandardMaterial color="#55595a" roughness={0.95} /></mesh>
     <mesh geometry={alleyGeometry} receiveShadow><meshStandardMaterial color="#a49d8c" roughness={1} /></mesh>
     {ROAD_GRID.map((line) => <group key={line}>
-      {[-61, -43, -25, -7, 11, 29, 47].map((z) => <mesh key={`${line}-${z}`} position={[line + 0.05, groundHeight(line, z) + 0.1, z]} rotation-x={-Math.PI / 2}>
-        <planeGeometry args={[0.12, 1.8]} /><meshBasicMaterial color="#d5cdb7" transparent opacity={0.55} />
+      {line === 0 && [-49, -37, -25, -13, -1, 11, 23, 35, 47, 59].map((z) => <mesh key={`${line}-${z}`} position={[line + 0.05, groundHeight(line, z) + 0.1, z]} rotation-x={-Math.PI / 2}>
+        <planeGeometry args={[0.1, 1.25]} /><meshBasicMaterial color="#d5cdb7" transparent opacity={0.38} />
       </mesh>)}
     </group>)}
   </>;
@@ -165,10 +165,17 @@ function StreetLife({ lowMotion }) {
     [-6, -51, 0.72], [11, 50, 0.8], [43, -2, 0.78], [-42, 42, 0.76]
   ];
   const cars = [
-    { x: -4.6, z: -38, color: '#7c8e8d', rotation: 0 },
-    { x: 4.6, z: -3, color: '#b66c4e', rotation: Math.PI },
-    { x: -4.6, z: 31, color: '#d1c5a4', rotation: 0 },
-    { x: 8.0, z: 48, color: '#657b9b', rotation: -Math.PI / 2 }
+    { x: 1.55, z: -40, color: '#d8dcdd', rotation: 0 },
+    { x: -1.55, z: -8, color: '#586a75', rotation: 0 },
+    { x: 1.55, z: 23, color: '#9e5546', rotation: 0 },
+    { x: 28, z: 46, color: '#aeb2ae', rotation: 0 }
+  ];
+  const motorcycles = [
+    { x: -2.35, z: 6.5, color: '#b64e3d', rotation: 0 }
+  ];
+  const bicycles = [
+    { x: -31, z: -14, color: '#236c56', rotation: 0 },
+    { x: 31, z: -14, color: '#d08c42', rotation: 0 }
   ];
   const walkers = [
     { start: [-5.2, -28], color: '#315f74', phase: 0.2 },
@@ -180,6 +187,8 @@ function StreetLife({ lowMotion }) {
   return <>
     {trees.map(([x, z, scale]) => <Tree key={`tree-${x}-${z}`} position={[x, groundHeight(x, z), z]} scale={scale} />)}
     {cars.map((car, index) => <ParkedCar key={`car-${index}`} position={[car.x, groundHeight(car.x, car.z), car.z]} color={car.color} rotation={car.rotation} />)}
+    {motorcycles.map((vehicle, index) => <ParkedMotorcycle key={`motorcycle-${index}`} position={[vehicle.x, groundHeight(vehicle.x, vehicle.z) + 0.14, vehicle.z]} color={vehicle.color} rotation={vehicle.rotation} />)}
+    {bicycles.map((vehicle, index) => <ParkedBicycle key={`bicycle-${index}`} position={[vehicle.x, groundHeight(vehicle.x, vehicle.z) + 0.14, vehicle.z]} color={vehicle.color} rotation={vehicle.rotation} />)}
     {walkers.map((person, index) => <WalkingPerson key={`person-${index}`} {...person} lowMotion={lowMotion} />)}
   </>;
 }
@@ -236,8 +245,11 @@ export default function NeighborhoodWorld({ homes, selectedId, isNight, showODS,
       : <CommunitySquare key={place.id} place={place} onSelect={onSelectPlace} />)}
     <UtilityNetwork isNight={isNight} streetLightsActive={streetLightsActive} />
     <BusStop position={[-4.6, groundHeight(-4.6, -52), -52]} />
+    <SalvadorBus position={[-1.75, groundHeight(-1.75, -54.2) + 0.075, -54.2]} />
     <StreetLife lowMotion={lowMotion} />
     <Stairs x={14} z={-22} steps={10} direction={1} />
+    <Stairs x={-14} z={6} steps={8} direction={1} />
+    <Stairs x={42} z={6} steps={8} direction={-1} />
     <Stairs x={-14} z={16} steps={9} direction={-1} />
     {showODS && <OdsOverlay points={ODS_POINTS} onSelect={onSelectPlace} />}
     {isNight && <group>

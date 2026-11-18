@@ -2,13 +2,13 @@ export const WORLD_LIMIT = 60;
 export const ROAD_GRID = [-56, -28, 0, 28, 56];
 
 export function groundHeight(x, z) {
-  const mainSlope = (z + 56) * 0.035;
-  const naturalVariation = Math.sin(x * 0.065) * Math.cos(z * 0.052) * 0.28;
-  const hillside = Math.max(0, z - 14) * 0.012;
+  const mainSlope = (z + 56) * 0.045;
+  const naturalVariation = Math.sin(x * 0.065) * Math.cos(z * 0.052) * 0.48 + Math.sin((x + z) * 0.11) * 0.14;
+  const hillside = Math.max(0, z - 14) * 0.016;
   return mainSlope + naturalVariation + hillside;
 }
 
-const COLORS = ['#c9825d', '#d9b77b', '#6f9ba5', '#c87878', '#8d9c73', '#b28eaa', '#d0a36d', '#78918b', '#b5a18b'];
+const COLORS = ['#bf785a', '#c8a274', '#708b88', '#b96e66', '#7d8b68', '#9b8292', '#bd8e61', '#78877b', '#a58e77'];
 
 const SPECIAL_PLOTS = {
   '0-1-0': { id: 'bakery', type: 'bakery', title: 'Padaria da Comunidade', description: 'Pequeno comércio de bairro, ponto de encontro e serviço essencial para os moradores.', impact: 'Fortalece a economia local e ajuda a manter serviços próximos das residências.', recommendation: 'Pode receber iluminação LED e um sistema fotovoltaico dimensionado para o consumo do comércio.', width: 8.5, depth: 8.5 },
@@ -63,7 +63,8 @@ export function createDistrictLayout(homes = []) {
         continue;
       }
 
-      const offsets = [7.2, 20.8];
+      // Compact rows leave narrow pedestrian passages inside each block.
+      const offsets = [9.4, 18.6];
       offsets.forEach((zOffset, localRow) => {
         offsets.forEach((xOffset, localCol) => {
           const key = `${row}-${col}-${localRow * 2 + localCol}`;

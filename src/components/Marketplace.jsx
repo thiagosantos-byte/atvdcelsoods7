@@ -158,7 +158,7 @@ export default function Marketplace() {
   return <section className="marketplace-view">
     <div className="mk-hero">
       <div><span className="mk-kicker"><Zap size={13} /> MARKETPLACE DE ENERGIA SOCIAL · ODS 7</span><h2>Energia renovável com <em>destinação social.</em></h2><p>Conecte geração compartilhada, patrocinadores e famílias com pressão no orçamento causada pela conta de luz.</p><div className="mk-hero-tags"><span><ShieldCheck size={13} /> Triagem social</span><span><Handshake size={13} /> Geração compartilhada</span><span><Leaf size={13} /> Impacto mensurável</span></div></div>
-      <div className="mk-hero-mark"><Zap size={34} /><b>ENERGIA<br/>VIVA</b><small>MARKETPLACE · PILOTO</small></div>
+      <div className="mk-hero-brand"><img src="/energia-viva-logo.png" alt="" /><small>MARKETPLACE · PILOTO</small></div>
     </div>
 
     <div className="mk-notice"><AlertTriangle size={17} /><div><b>Ambiente demonstrativo</b><span>Cadastros, compatibilidade, rateio e economia são simulações locais. Não há transferência de créditos nem integração com a distribuidora. A operação real depende de validação jurídica, adesão formal ao SCEE e procedimentos da distribuidora.</span></div></div>
